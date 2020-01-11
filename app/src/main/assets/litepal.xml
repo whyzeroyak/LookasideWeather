@@ -1,0 +1,12 @@
+<litepal>
+    <dbname value="Lookaside_Weather" />
+
+    <version value="1" />
+
+    <list>
+        <mapping class="com.example.lookasideweather.db.Province" />
+        <mapping class="com.example.lookasideweather.db.City" />
+        <mapping class="com.example.lookasideweather.db.County" />
+    </list>
+
+</litepal>
