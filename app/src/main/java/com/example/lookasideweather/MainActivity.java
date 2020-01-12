@@ -12,10 +12,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_main);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getString("WeatherNow", null) != null &&
-                prefs.getString("WeatherForeacast", null) != null &&
+                prefs.getString("WeatherForecast", null) != null &&
                 prefs.getString("WeatherLifestyle", null) != null &&
                 prefs.getString("Air", null) != null) {
             Intent intent = new Intent(this, WeatherActivity.class);
