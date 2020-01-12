@@ -5,6 +5,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -26,6 +27,7 @@ import com.example.lookasideweather.gson.Suggestion;
 import com.example.lookasideweather.gson.WeatherForecast;
 import com.example.lookasideweather.gson.WeatherLifestyle;
 import com.example.lookasideweather.gson.WeatherNow;
+import com.example.lookasideweather.service.AutoUpdateService;
 import com.example.lookasideweather.util.HttpUtil;
 import com.example.lookasideweather.util.Utility;
 
@@ -98,24 +100,30 @@ public class WeatherActivity extends AppCompatActivity {
 
         if (weatherForecastString != null) {
             WeatherForecast weatherForecast = Utility.handleWeatherForecastResponse(weatherForecastString);
+            mWeatherId = weatherForecast.basic.weatherId;
             showWeatherForecastInfo(weatherForecast);
         } else {
+            mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeatherForecast(mWeatherId);
         }
 
         if (weatherLifestyleString != null) {
             WeatherLifestyle weatherLifestyle = Utility.handleWeatherLifestyleResponse(weatherLifestyleString);
+            mWeatherId = weatherLifestyle.basic.weatherId;
             showWeatherLifestyleInfo(weatherLifestyle);
         } else {
+            mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeatherLifestyle(mWeatherId);
         }
 
         if (airString != null) {
             Air air = Utility.handleAirResponse(airString);
+            mWeatherId = air.basic.weatherId;
             showAirInfo(air);
         } else {
+            mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestAir(mWeatherId);
         }
@@ -199,6 +207,7 @@ public class WeatherActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("WeatherForecast", responseText);
                             editor.apply();
+                            mWeatherId = weatherForecast.basic.weatherId;
                             showWeatherForecastInfo(weatherForecast);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取未来几天天气信息失败", Toast.LENGTH_SHORT).show();
@@ -237,6 +246,7 @@ public class WeatherActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("WeatherLifestyle", responseText);
                             editor.apply();
+                            mWeatherId = weatherLifestyle.basic.weatherId;
                             showWeatherLifestyleInfo(weatherLifestyle);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取生活指数信息失败", Toast.LENGTH_SHORT).show();
@@ -275,6 +285,7 @@ public class WeatherActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("Air", responseText);
                             editor.apply();
+                            mWeatherId = air.basic.weatherId;
                             showAirInfo(air);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取空气质量信息失败", Toast.LENGTH_SHORT).show();
@@ -308,6 +319,8 @@ public class WeatherActivity extends AppCompatActivity {
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
         weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     private void showWeatherForecastInfo(WeatherForecast weatherForecast) {
@@ -325,6 +338,8 @@ public class WeatherActivity extends AppCompatActivity {
             forecastLayout.addView(view);
         }
         weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     private void showWeatherLifestyleInfo(WeatherLifestyle weatherLifestyle) {
@@ -345,6 +360,8 @@ public class WeatherActivity extends AppCompatActivity {
             }
         }
         weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     private void showAirInfo(Air air) {
@@ -353,6 +370,8 @@ public class WeatherActivity extends AppCompatActivity {
             pm25Text.setText(air.aqi.pm25);
         }
         weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     private void loadBingPic() {
