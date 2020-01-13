@@ -27,6 +27,7 @@ import com.example.lookasideweather.gson.Suggestion;
 import com.example.lookasideweather.gson.WeatherForecast;
 import com.example.lookasideweather.gson.WeatherLifestyle;
 import com.example.lookasideweather.gson.WeatherNow;
+import com.example.lookasideweather.model.Common;
 import com.example.lookasideweather.service.AutoUpdateService;
 import com.example.lookasideweather.util.HttpUtil;
 import com.example.lookasideweather.util.Utility;
@@ -43,13 +44,20 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView titleCity;
     private TextView titleUpdateTime;
     private TextView degreeText;
+    private ImageView imgWeather;
     private TextView weatherInfoText;
     private LinearLayout forecastLayout;
     private TextView aqiText;
+    private TextView airQlty;
     private TextView pm25Text;
-    private TextView comfortText;
-    private TextView carWashText;
-    private TextView sportText;
+    private TextView airBrf;
+    private TextView comfBrf;
+    private TextView fluBrf;
+    private TextView drsgBrf;
+    private TextView airTxt;
+    private TextView comfortTxt;
+    private TextView influenzaTxt;
+    private TextView dressTxt;
     private ImageView bingPicImg;
     public SwipeRefreshLayout swipeRefresh;
     public DrawerLayout drawerLayout;
@@ -70,13 +78,20 @@ public class WeatherActivity extends AppCompatActivity {
         titleCity = (TextView) findViewById(R.id.title_city);
         titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
         degreeText = (TextView) findViewById(R.id.degree_text);
+        imgWeather = (ImageView) findViewById(R.id.img_cond);
         weatherInfoText = (TextView) findViewById(R.id.weather_info_text);
         forecastLayout = (LinearLayout) findViewById(R.id.forecast_layout);
         aqiText = (TextView) findViewById(R.id.aqi_text);
+        airQlty = (TextView) findViewById(R.id.airQlty);
         pm25Text = (TextView) findViewById(R.id.pm25_text);
-        comfortText = (TextView) findViewById(R.id.comfort_text);
-        carWashText = (TextView) findViewById(R.id.car_wash_text);
-        sportText = (TextView) findViewById(R.id.sport_text);
+        airBrf = (TextView) findViewById(R.id.sug_air);
+        comfBrf = (TextView) findViewById(R.id.sug_comf);
+        fluBrf = (TextView) findViewById(R.id.sug_flu);
+        drsgBrf = (TextView) findViewById(R.id.sug_drsg);
+        airTxt = (TextView) findViewById(R.id.air_txt);
+        comfortTxt = (TextView) findViewById(R.id.comf_txt);
+        influenzaTxt = (TextView) findViewById(R.id.flu_txt);
+        dressTxt = (TextView) findViewById(R.id.drsg_txt);
         bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
         swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         drawerLayout = (DrawerLayout) findViewById(R.id.draw_layout);
@@ -87,7 +102,7 @@ public class WeatherActivity extends AppCompatActivity {
         String weatherForecastString = prefs.getString("WeatherForecast", null);
         String weatherLifestyleString = prefs.getString("WeatherLifestyle", null);
         String airString = prefs.getString("Air", null);
-        String bingPic = prefs.getString("bing_pic", null);
+        final String bingPic = prefs.getString("bing_pic", null);
         if (weatherNowString != null) {
             WeatherNow weatherNow = Utility.handleWeatherNowResponse(weatherNowString);
             mWeatherId = weatherNow.basic.weatherId;
@@ -135,6 +150,7 @@ public class WeatherActivity extends AppCompatActivity {
                 requestWeatherForecast(mWeatherId);
                 requestWeatherLifestyle(mWeatherId);
                 requestAir(mWeatherId);
+                Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
             }
         });
 
@@ -154,7 +170,7 @@ public class WeatherActivity extends AppCompatActivity {
 
     public void requestWeatherNow(final String weatherId) {
         String weatherNowUrl = "https://free-api.heweather.net/s6/weather/now?location=" +
-                weatherId + "&key=e6fafde008d3422990d311c028a2d6f9";
+                weatherId + "&key=d44feb7f4ea54a4fba078e9e6c5c81be";
         HttpUtil.sendOkHttpRequest(weatherNowUrl, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -194,7 +210,7 @@ public class WeatherActivity extends AppCompatActivity {
 
     public void requestWeatherForecast(final String weatherId) {
         String weatherForecastUrl = "https://free-api.heweather.net/s6/weather/forecast?location=" +
-                weatherId + "&key=e6fafde008d3422990d311c028a2d6f9";
+                weatherId + "&key=d44feb7f4ea54a4fba078e9e6c5c81be";
         HttpUtil.sendOkHttpRequest(weatherForecastUrl, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -233,7 +249,7 @@ public class WeatherActivity extends AppCompatActivity {
 
     public void requestWeatherLifestyle(final String weatherId) {
         String weatherLifestyleUrl = "https://free-api.heweather.net/s6/weather/lifestyle?location=" +
-                weatherId + "&key=e6fafde008d3422990d311c028a2d6f9";
+                weatherId + "&key=d44feb7f4ea54a4fba078e9e6c5c81be";
         HttpUtil.sendOkHttpRequest(weatherLifestyleUrl, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -272,7 +288,7 @@ public class WeatherActivity extends AppCompatActivity {
 
     public void requestAir(final String weatherId) {
         String airUrl = "https://free-api.heweather.net/s6/air/now?location=" +
-                weatherId + "&key=e6fafde008d3422990d311c028a2d6f9";
+                weatherId + "&key=d44feb7f4ea54a4fba078e9e6c5c81be";
         HttpUtil.sendOkHttpRequest(airUrl, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -314,10 +330,40 @@ public class WeatherActivity extends AppCompatActivity {
         String updateTime = weatherNow.update.updateTime.split(" ")[1];
         String degree = weatherNow.now.temperature + "℃";
         String weatherInfo = weatherNow.now.info;
+        int imgCode = weatherNow.now.code;
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
+
+        if (imgCode == 100) {
+            imgWeather.setImageResource(R.mipmap.sun);
+        }
+        if (imgCode >= 101 && imgCode <= 103) {
+            imgWeather.setImageResource(R.mipmap.cloudy);
+        }
+        if (imgCode == 104) {
+            imgWeather.setImageResource(R.mipmap.overcast);
+        }
+        if (imgCode >= 200 && imgCode <= 213) {
+            imgWeather.setImageResource(R.mipmap.windy);
+        }
+        if (imgCode >= 300 && imgCode <= 313) {
+            imgWeather.setImageResource(R.mipmap.rain);
+        }
+        if (imgCode >= 400 && imgCode <= 407) {
+            imgWeather.setImageResource(R.mipmap.snow);
+        }
+        if (imgCode >= 500 && imgCode <= 501) {
+            imgWeather.setImageResource(R.mipmap.fog);
+        }
+        if (imgCode == 502) {
+            imgWeather.setImageResource(R.mipmap.haze);
+        }
+        if (imgCode >= 503 && imgCode <= 508) {
+            imgWeather.setImageResource(R.mipmap.sandstorm);
+        }
+
         weatherLayout.setVisibility(View.VISIBLE);
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
@@ -327,14 +373,38 @@ public class WeatherActivity extends AppCompatActivity {
         forecastLayout.removeAllViews();
         for (Forecast forecast : weatherForecast.forecastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
-            TextView dateText = (TextView) view.findViewById(R.id.date_text);
-            TextView infoText = (TextView) view.findViewById(R.id.info_text);
-            TextView maxText = (TextView) view.findViewById(R.id.max_text);
-            TextView minText = (TextView) view.findViewById(R.id.min_text);
-            dateText.setText(forecast.date);
+            TextView dateText = (TextView) view.findViewById(R.id.date_Text);
+            TextView infoText = (TextView) view.findViewById(R.id.info_Text);
+            ImageView forecastImg = (ImageView) view.findViewById(R.id.foreDayWeather);
+            TextView minText = (TextView) view.findViewById(R.id.min_Text);
+            TextView maxText = (TextView) view.findViewById(R.id.max_Text);
+            String WeatherDate = forecast.date;
+            String weekDate = Common.getDate(WeatherDate);
+
+            dateText.setText(weekDate);
+
+            int foreCode = forecast.foreCode;
+            //设置天气信息的相应Icon
+
+            if (foreCode >= 100 && foreCode <= 103) {
+                forecastImg.setImageResource(R.mipmap.foredaysun);
+            }
+            if ((foreCode >= 104 && foreCode <= 213) || (foreCode >= 500 && foreCode <= 502)) {
+                forecastImg.setImageResource(R.mipmap.foredaycloud);
+            }
+            if (foreCode >= 300 && foreCode <= 313) {
+                forecastImg.setImageResource(R.mipmap.foredayrain);
+            }
+            if (foreCode >= 400 && foreCode <= 407) {
+                forecastImg.setImageResource(R.mipmap.foredaysnow);
+            }
+            if (foreCode >= 503 && foreCode <= 508) {
+                forecastImg.setImageResource(R.mipmap.foredaysand);
+            }
+
             infoText.setText(forecast.info);
-            maxText.setText(forecast.max);
-            minText.setText(forecast.min);
+            maxText.setText(forecast.max + "℃");
+            minText.setText(forecast.min + "℃");
             forecastLayout.addView(view);
         }
         weatherLayout.setVisibility(View.VISIBLE);
@@ -345,17 +415,29 @@ public class WeatherActivity extends AppCompatActivity {
     private void showWeatherLifestyleInfo(WeatherLifestyle weatherLifestyle) {
         for (Suggestion suggestion : weatherLifestyle.suggestionList) {
             switch (suggestion.type) {
+                case "air":
+                    String airbrt = "空气指数---" + suggestion.brief;
+                    String airtxt = suggestion.info;
+                    airBrf.setText(airbrt);
+                    airTxt.setText(airtxt);
+                    break;
                 case "comf":
-                    String comfort = "舒适度：" + suggestion.info;
-                    comfortText.setText(comfort);
+                    String comfbrf = "舒适指数---" + suggestion.brief;
+                    String comforttxt = suggestion.info;
+                    comfBrf.setText(comfbrf);
+                    comfortTxt.setText(comforttxt);
                     break;
-                case "cw":
-                    String carWash = "洗车指数：" + suggestion.info;
-                    carWashText.setText(carWash);
+                case "flu":
+                    String flubrf = "感冒指数---" + suggestion.brief;
+                    String influenzatxt = suggestion.info;
+                    fluBrf.setText(flubrf);
+                    influenzaTxt.setText(influenzatxt);
                     break;
-                case "sport":
-                    String sport = "运动建议：" + suggestion.info;
-                    sportText.setText(sport);
+                case "drsg":
+                    String drsgbrf = "穿衣指数---" + suggestion.brief;
+                    String dresstxt = suggestion.info;
+                    drsgBrf.setText(drsgbrf);
+                    dressTxt.setText(dresstxt);
                     break;
             }
         }
@@ -366,6 +448,7 @@ public class WeatherActivity extends AppCompatActivity {
 
     private void showAirInfo(Air air) {
         if (air.aqi != null) {
+            airQlty.setText("：" + air.aqi.qlty);
             aqiText.setText(air.aqi.aqi);
             pm25Text.setText(air.aqi.pm25);
         }
