@@ -150,7 +150,6 @@ public class WeatherActivity extends AppCompatActivity {
                 requestWeatherForecast(mWeatherId);
                 requestWeatherLifestyle(mWeatherId);
                 requestAir(mWeatherId);
-                Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
             }
         });
 
